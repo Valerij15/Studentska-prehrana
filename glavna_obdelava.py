@@ -13,7 +13,20 @@ def stran_v_lokale(stran):
     narejen_vzorec = re.compile(vzorec, re.DOTALL)
     return re.findall(narejen_vzorec, stran)
 
+def pridobi_podatke_lokala(lokal):
+    vzorec = (r'data-cena="(?P<cena>.*?)".*?data-doplacilo="(?P<doplacilo>.*?)".*?data-posid="(?P<id>.*?)".*?data-lokal="(?P<ime>.*?)".*?data-city="(?P<mesto>.*?)".*?'
+        '<form>.*?checked="checked".*?value="(?P<ocena>.*?)".*?'
+    )
+    narejen_vzorec = re.compile(vzorec, re.DOTALL)
+    najdeno = re.search(narejen_vzorec, lokal)
+    if najdeno:
+        return najdeno.groupdict()
+    return None
+
+
 vsebina = datoteka_v_niz(mapa, datoteka)
 seznam = stran_v_lokale(vsebina)
-print(len(seznam))
-
+seznam_podatkov =[
+    pridobi_podatke_lokala(lokal) for lokal in seznam
+]
+print(seznam_podatkov)
