@@ -22,6 +22,14 @@ def pridobi_podatke_lokala(lokal):
         return najdeno.groupdict()
     return None
 
+def pridobi_oceno_lokala(lokal):
+    vzorec = r'data-posid="(?P<id>.*?)".*?data-lokal="(?P<ime>.*?)".*?<form>.*?checked="checked".*?value="(?P<ocena>.*?)".*?'
+    narejen_vzorec = re.compile(vzorec, re.DOTALL)
+    najdeno = re.search(narejen_vzorec, lokal)
+    if najdeno:
+        return najdeno.groupdict()
+    return None
+
 def napisi_csv(polja, vrstice, mapa, ime_datoteke):
     os.makedirs(mapa, exist_ok=True)
     pot = os.path.join(mapa, ime_datoteke)
@@ -34,7 +42,14 @@ def napisi_csv(polja, vrstice, mapa, ime_datoteke):
 
 vsebina = datoteka_v_niz(mapa, datoteka)
 seznam = stran_v_lokale(vsebina)
+seznam_ocen = []
 seznam_podatkov = [
     pridobi_podatke_lokala(lokal) for lokal in seznam
 ]
-napisi_csv(['id', 'ime', 'cena', 'doplacilo','mesto', 'ocena'], seznam_podatkov, 'csv_datoteke', 'lokali.csv')
+for lokal in seznam:
+    slovar = pridobi_oceno_lokala(lokal)
+    if slovar is not None:
+        seznam_ocen.append(slovar)
+
+napisi_csv(['id', 'ime', 'cena', 'doplacilo','mesto'], seznam_podatkov, 'csv_datoteke', 'lokali.csv')
+napisi_csv(['id', 'ime', 'ocena'], seznam_ocen, 'csv_datoteke', 'ocene.csv')
