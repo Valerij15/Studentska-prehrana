@@ -52,7 +52,7 @@ def preberi_podrobne_informacije(datoteka, num = 20):
        pot = os.path.join(mapa, f'podrobne_informacije{i}.html')
        with open(pot, 'a', encoding='utf-8') as izhodna_datoteka:
             if besedilo is not None:
-                izhodna_datoteka.write("\n <nova_stran> \n")
+                izhodna_datoteka.write(f'\n <nova_stran><strid={id}> \n')
                 izhodna_datoteka.write(besedilo)
                 izhodna_datoteka.write("\n </nova_stran> \n")
 
