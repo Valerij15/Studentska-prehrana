@@ -10,7 +10,7 @@ def datoteka_v_niz(mapa, ime_datoteke):
         return vhodna_datoteka.read()
 
 def stran_v_lokale(stran):
-    vzorec = r'<div class="row restaurant-row(.*?)</div>'
+    vzorec = r'<div class="row restaurant-row(.*?<img src.*?)</div>'
     narejen_vzorec = re.compile(vzorec, re.DOTALL)
     return re.findall(narejen_vzorec, stran)
 
@@ -41,10 +41,31 @@ vsebina = datoteka_v_niz(mapa, datoteka)
 seznam = stran_v_lokale(vsebina)
 seznam_ocen = []
 seznam_strani = []
+posebnosti = set()
+seznam_posebnosti = []
 vzorec = r'data-naslov="(?P<naslov>.*?)".*?data-doplacilo="(?P<doplacilo>.*?)".*?data-posid="(?P<id>.*?)".*?data-lokal="(?P<ime>.*?)".*?data-city="(?P<mesto>.*?)".*?'
 seznam_podatkov = [
     pridobi_podatke_lokala(lokal, vzorec) for lokal in seznam
 ]
+for lokal in seznam:
+    vzorec = r'alt="(.*?)"'
+    vzorec = re.compile(vzorec, re.DOTALL)
+    nove_posebnosti = re.findall(vzorec, lokal)
+    vzorec_id = r'data-posid="(.*?)"'
+    vzorec_id = re.compile(vzorec_id, re.DOTALL)
+    id_lokala = re.findall(vzorec_id, lokal)[0]
+    slovar = {}
+    slovar['id_lokala'] = id_lokala
+    for posebnost in nove_posebnosti:
+        slovar[posebnost] = "Da"
+        posebnosti.add(posebnost)
+    seznam_posebnosti.append(slovar)
+
+for lok in seznam_posebnosti:
+    for posebnost in posebnosti:
+        if posebnost not in lok.keys():
+            lok[posebnost] = "Ne"
+
 
 vzorec = r'data-posid="(?P<id>.*?)".*?data-lokal="(?P<ime>.*?)".*?<form>.*?checked="checked".*?value="(?P<ocena>.*?)".*?'
 for lokal in seznam:
@@ -83,8 +104,11 @@ for lokal in uporaben_seznam:
 #    seznam_strani.append((id_lokala, pridobi_podatke_lokala(lokal, vzorec_meni)))
 
 
+posebnosti = list(posebnosti)
+posebnosti.insert(0,'id_lokala')
 
 
-napisi_csv(['id', 'ime', 'naslov', 'doplacilo','mesto'], seznam_podatkov, 'csv_datoteke', 'lokali.csv')
-napisi_csv(['id_lokala', 'jed', 'vrsta'], seznam_strani, 'csv_datoteke', 'jedi.csv')
+#napisi_csv(['id', 'ime', 'naslov', 'doplacilo','mesto'], seznam_podatkov, 'csv_datoteke', 'lokali.csv')
+napisi_csv(posebnosti, seznam_posebnosti, 'csv_datoteke', 'posebnosti.csv')
+#napisi_csv(['id_lokala', 'jed', 'vrsta'], seznam_strani, 'csv_datoteke', 'jedi.csv')
 #napisi_csv(['id', 'ime', 'ocena'], seznam_ocen, 'csv_datoteke', 'ocene.csv')
