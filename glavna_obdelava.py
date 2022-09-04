@@ -14,6 +14,11 @@ def stran_v_lokale(stran):
     narejen_vzorec = re.compile(vzorec, re.DOTALL)
     return re.findall(narejen_vzorec, stran)
 
+def loci_strani(strani):
+    vzorec = r'<nova_stran>(.*?)</nova_stran>'
+    narejen_vzorec = re.compile(vzorec, re.DOTALL)
+    return re.findall(narejen_vzorec, strani)
+
 def pridobi_podatke_lokala(lokal):
     vzorec = r'data-naslov="(?P<naslov>.*?)".*?data-doplacilo="(?P<doplacilo>.*?)".*?data-posid="(?P<id>.*?)".*?data-lokal="(?P<ime>.*?)".*?data-city="(?P<mesto>.*?)".*?'
     narejen_vzorec = re.compile(vzorec, re.DOTALL)
