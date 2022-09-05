@@ -67,7 +67,7 @@ for lok in seznam_posebnosti:
             lok[posebnost] = "Ne"
 
 
-vzorec = r'data-posid="(?P<id>.*?)".*?data-lokal="(?P<ime>.*?)".*?<form>.*?checked="checked".*?value="(?P<ocena>.*?)".*?'
+vzorec = r'data-posid="(?P<id>.*?)".*?<form>.*?checked="checked".*?value="(?P<ocena>.*?)".*?'
 for lokal in seznam:
     slovar = pridobi_podatke_lokala(lokal, vzorec)
     if slovar is not None:
@@ -84,7 +84,6 @@ for i in range(1, 19):
     for str in tab:
         uporaben_seznam.append(str)
 
-lokal = uporaben_seznam[0]
 for lokal in uporaben_seznam:
     vzorec_id = r'<strid=(.*?)>'
     vzorec_id = re.compile(vzorec_id, re.DOTALL)
@@ -96,12 +95,6 @@ for lokal in uporaben_seznam:
         slovar['id_lokala'] = id_lokala
         seznam_strani.append(slovar)
 
-#seznam_strani.append((id_lokala, pridobi_podatke_lokala(lokal, vzorec_meni)))
-#for lokal in uporaben_seznam:
-#    vzorec_id = r'<strid=(.*?)>'
-#    id_lokala = pridobi_podatke_lokala(lokal, vzorec_id)
-#    vzorec_meni = r'<p class="text-bold color-blue"><h5><strong class=" color-blue">\d+ &nbsp;\s+(?P<jed>.*?)</strong>.*?<title="(?P<vrsta>.*?)"'
-#    seznam_strani.append((id_lokala, pridobi_podatke_lokala(lokal, vzorec_meni)))
 
 
 posebnosti = list(posebnosti)
@@ -109,6 +102,6 @@ posebnosti.insert(0,'id_lokala')
 
 
 #napisi_csv(['id', 'ime', 'naslov', 'doplacilo','mesto'], seznam_podatkov, 'csv_datoteke', 'lokali.csv')
-napisi_csv(posebnosti, seznam_posebnosti, 'csv_datoteke', 'posebnosti.csv')
+#napisi_csv(posebnosti, seznam_posebnosti, 'csv_datoteke', 'posebnosti.csv')
 #napisi_csv(['id_lokala', 'jed', 'vrsta'], seznam_strani, 'csv_datoteke', 'jedi.csv')
-#napisi_csv(['id', 'ime', 'ocena'], seznam_ocen, 'csv_datoteke', 'ocene.csv')
+napisi_csv(['id', 'ocena'], seznam_ocen, 'csv_datoteke', 'ocene.csv')
