@@ -61,6 +61,6 @@ def preberi_podrobne_informacije(datoteka, num = 20):
         i += 1
             
 
-preberi_podrobne_informacije('lokali.csv', 20)
-besedilo = prenesi_iz_url(glavna_stran_url)
-shrani_v_datoteko(besedilo, mapa, ime_datoteke)
+#preberi_podrobne_informacije('lokali.csv', 20)
+#besedilo = prenesi_iz_url(glavna_stran_url)
+#shrani_v_datoteko(besedilo, mapa, ime_datoteke)

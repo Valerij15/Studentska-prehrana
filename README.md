@@ -4,7 +4,7 @@ Analiziral bom imenik lokalov, ki ga nudi spletna stran za študentsko prehrano(
 
 Za vsak lokal bom zajel:
 * ime lokala
-* kraj
+* kraj lokala
 * oceno lokala
 * doplačilo za obrok
 * pozitivne lastnosti lokala(vegiterjanske jedi, delavnik ob vikendih, itd.)
@@ -22,9 +22,15 @@ Trenutne datoteke so:
 * glavna_obdelava.py - skripta uporabljena za pridobitev ključnih podatkov iz html datoteke ter shranjevanje v csv obliko.
 * lokali.csv - csv datoteka s ključnimi informacijami o lokalih (id, ime, kraj, cena, doplačilo)
 * ocene.csv - csv datoteka s podatki o ocenah
+* jedi.csv - csv datoteka s podatki o jedeh in njihovih vrstah
+* posebnosti.csv - csv datoteka s podatki o pozitivnih lastnostih lokalov oziroma posebnostih
+* glavna_stran.html - osnovna html stran s ključnimi podatki o lokalih
+* podrobne_informacije{i}.html - html datoteke s več podrobnimi informacijami o lokalih
+* analiza.ipynb - datoteka z grafi in analizo
+* studentska_prehrana.pdf - datoteka s podrobnejšimi informacijami o projektni nalogi 
 
 ## Opombe
-Nameravam zajeti še html strani za posamezne lokale, ter podatke o menijih, ki jih bom tudi spravil v svoje csv datoteke. Žal mi je za zajem tega do današnjega dne zmanjkalo časa.
+Podrobnosti o datotekah in zaključek so napisani v datoteki studentska_prehrana.pdf.
 
 ## Avtorji
 * Valerij Jovanov
