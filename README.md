@@ -30,7 +30,8 @@ Trenutne datoteke so:
 * studentska_prehrana.pdf - datoteka s podrobnejšimi informacijami o projektni nalogi 
 
 ## Opombe
-Podrobnosti o datotekah in zaključek so napisani v datoteki studentska_prehrana.pdf.
+* Podrobnosti o datotekah in zaključek so napisani v datoteki studentska_prehrana.pdf.
+* Datoteka napovedovanje.ipynb je bila narejena bolj za zabavo z veliko pomoči zapiskov.
 
 ## Avtorji
 * Valerij Jovanov
