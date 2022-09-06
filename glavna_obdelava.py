@@ -5,23 +5,107 @@ import csv
 mapa = 'html_datoteke'
 datoteka = 'glavna_stran.html'
 
+vzorec_stran_v_lokale = re.compile(r'<div class="row restaurant-row(.*?<img src.*?)</div>', re.DOTALL)
+
+vzorec_podatki_lokalov = re.compile(
+    r'data-naslov="(?P<naslov>.*?)".*?'
+    r'data-doplacilo="(?P<doplacilo>.*?)".*?'
+    r'data-posid="(?P<id>.*?)".*?'
+    r'data-lokal="(?P<ime>.*?)".*?'
+    r'data-city="(?P<mesto>.*?)".*?',
+    re.DOTALL
+)
+
+vzorec_loci_strani = re.compile(r'<nova_stran>(.*?)</nova_stran>', re.DOTALL)
+
+vzorec_pridobi_posebnost = re.compile(r'alt="(.*?)"', re.DOTALL)
+
+vzorec_pridobi_id = re.compile(r'data-posid="(.*?)"', re.DOTALL)
+
+vzorec_prirejen_id = re.compile(r'<strid=(.*?)>', re.DOTALL)
+
+vzorec_ocene = re.compile(
+    r'data-posid="(?P<id>.*?)".*?'
+    r'<form>.*?checked="checked".*?value="(?P<ocena>.*?)".*?',
+    re.DOTALL
+)
+
+vzorec_meni = re.compile(
+    r'<p class="text-bold color-blue"><h5><strong class=" color-blue">.*?'
+    r'&nbsp;\s*(?P<jed>.*?)</strong>.*?'
+    r'title="(?P<vrsta>.*?)".*?',
+    re.DOTALL
+)
+
+
 def datoteka_v_niz(mapa, ime_datoteke):
     with open(os.path.join(mapa, ime_datoteke), encoding='utf-8') as vhodna_datoteka:
         return vhodna_datoteka.read()
 
 def stran_v_lokale(stran):
-    vzorec = r'<div class="row restaurant-row(.*?<img src.*?)</div>'
-    narejen_vzorec = re.compile(vzorec, re.DOTALL)
-    return re.findall(narejen_vzorec, stran)
+    seznam_lokalov = re.findall(vzorec_stran_v_lokale, stran)
+    seznam_podatkov_lokalov = [
+        pridobi_podatke_lokala(lokal, vzorec_podatki_lokalov) for lokal in seznam_lokalov
+    ]
+    for slovar in seznam_podatkov_lokalov:
+        slovar['ime'] = slovar['ime'].replace('&quot;','').replace('&amp;', '&')
+    napisi_csv(['id', 'ime', 'naslov', 'doplacilo', 'mesto'], seznam_podatkov_lokalov, 'csv_datoteke', 'lokali.csv')
 
-def loci_strani(strani):
-    vzorec = r'<nova_stran>(.*?)</nova_stran>'
-    narejen_vzorec = re.compile(vzorec, re.DOTALL)
-    return re.findall(narejen_vzorec, strani)
+def stran_v_posebnosti(stran):
+    posebnosti = set()
+    seznam_posebnosti = []
+    seznam_lokalov = re.findall(vzorec_stran_v_lokale, stran)
 
-def pridobi_podatke_lokala(lokal, vzorec):
-    narejen_vzorec = re.compile(vzorec, re.DOTALL)
-    najdeno = re.search(narejen_vzorec, lokal)
+    for lokal in seznam_lokalov:
+        nove_posebnosti = re.findall(vzorec_pridobi_posebnost, lokal)
+        id_lokala = re.findall(vzorec_pridobi_id, lokal)[0]
+        slovar = {}
+        slovar['id_lokala'] = id_lokala
+        for posebnost in nove_posebnosti:
+            slovar[posebnost] = "Da"
+            posebnosti.add(posebnost)
+        seznam_posebnosti.append(slovar)
+
+    for lokal in seznam_posebnosti:
+        for posebnost in posebnosti:
+            if posebnost not in lokal.keys():
+                lokal[posebnost] = "Ne"
+
+    imena = list(posebnosti)
+    imena.insert(0,'id_lokala')
+    napisi_csv(imena, seznam_posebnosti, 'csv_datoteke', 'posebnosti.csv')
+
+def stran_v_ocene(stran):
+    seznam_ocen = []
+    seznam_lokalov = re.findall(vzorec_stran_v_lokale, stran)
+    for lokal in seznam_lokalov:
+        slovar = pridobi_podatke_lokala(lokal, vzorec_ocene)
+        if slovar is not None:
+            seznam_ocen.append(slovar)
+    napisi_csv(['id', 'ocena'], seznam_ocen, 'csv_datoteke', 'ocene.csv')
+
+def pridobi_jedi(mapa):
+    uporaben_seznam = []
+    seznam_jedi = []
+
+    for i in range(1, 19):
+        vse = datoteka_v_niz(mapa, f'podrobne_informacije{i}.html')
+        tab = re.findall(vzorec_loci_strani, vse)
+        for str in tab:
+            uporaben_seznam.append(str)
+    
+    for lokal in uporaben_seznam:
+        id_lokala = re.findall(vzorec_prirejen_id, lokal)[0]
+        najdeno = [slovar.groupdict() for slovar in vzorec_meni.finditer(lokal)]
+        for slovar in najdeno:
+            slovar['id_lokala'] = id_lokala
+            seznam_jedi.append(slovar)
+
+    napisi_csv(['id_lokala', 'jed', 'vrsta'], seznam_jedi, 'csv_datoteke', 'jedi.csv')
+
+
+def pridobi_podatke_lokala(lokal):
+    najdeno = re.search(vzorec_podatki_lokalov, lokal)
     if najdeno:
         return najdeno.groupdict()
     return None
@@ -33,75 +117,22 @@ def napisi_csv(polja, vrstice, mapa, ime_datoteke):
         pisar = csv.DictWriter(csv_file, fieldnames=polja, extrasaction='ignore',delimiter = ";")
         pisar.writeheader()
         for vrstica in vrstice:
-            #vrstica['ime'] = vrstica['ime'].replace('&quot;','').replace('&amp;', '&')
             pisar.writerow(vrstica)
 
 
 vsebina = datoteka_v_niz(mapa, datoteka)
-seznam = stran_v_lokale(vsebina)
-seznam_ocen = []
-seznam_strani = []
-posebnosti = set()
-seznam_posebnosti = []
-vzorec = r'data-naslov="(?P<naslov>.*?)".*?data-doplacilo="(?P<doplacilo>.*?)".*?data-posid="(?P<id>.*?)".*?data-lokal="(?P<ime>.*?)".*?data-city="(?P<mesto>.*?)".*?'
-seznam_podatkov = [
-    pridobi_podatke_lokala(lokal, vzorec) for lokal in seznam
-]
-for lokal in seznam:
-    vzorec = r'alt="(.*?)"'
-    vzorec = re.compile(vzorec, re.DOTALL)
-    nove_posebnosti = re.findall(vzorec, lokal)
-    vzorec_id = r'data-posid="(.*?)"'
-    vzorec_id = re.compile(vzorec_id, re.DOTALL)
-    id_lokala = re.findall(vzorec_id, lokal)[0]
-    slovar = {}
-    slovar['id_lokala'] = id_lokala
-    for posebnost in nove_posebnosti:
-        slovar[posebnost] = "Da"
-        posebnosti.add(posebnost)
-    seznam_posebnosti.append(slovar)
 
-for lok in seznam_posebnosti:
-    for posebnost in posebnosti:
-        if posebnost not in lok.keys():
-            lok[posebnost] = "Ne"
-
-
-vzorec = r'data-posid="(?P<id>.*?)".*?<form>.*?checked="checked".*?value="(?P<ocena>.*?)".*?'
-for lokal in seznam:
-    slovar = pridobi_podatke_lokala(lokal, vzorec)
-    if slovar is not None:
-        seznam_ocen.append(slovar)
-
-for seznam in seznam_podatkov:
-    seznam['ime'] = seznam['ime'].replace('&quot;','').replace('&amp;', '&')
-
-uporaben_seznam = []
-
-for i in range(1, 19):
-    vse = datoteka_v_niz(mapa, f'podrobne_informacije{i}.html')
-    tab = loci_strani(vse)
-    for str in tab:
-        uporaben_seznam.append(str)
-
-for lokal in uporaben_seznam:
-    vzorec_id = r'<strid=(.*?)>'
-    vzorec_id = re.compile(vzorec_id, re.DOTALL)
-    id_lokala = re.findall(vzorec_id, lokal)[0]
-    vzorec_meni = r'<p class="text-bold color-blue"><h5><strong class=" color-blue">.*?&nbsp;\s*(?P<jed>.*?)</strong>.*?title="(?P<vrsta>.*?)".*?'
-    vzorec_meni = re.compile(vzorec_meni, re.DOTALL)
-    najdeno = [slovar.groupdict() for slovar in vzorec_meni.finditer(lokal)]
-    for slovar in najdeno:
-        slovar['id_lokala'] = id_lokala
-        seznam_strani.append(slovar)
+stran_v_lokale(vsebina)
+stran_v_ocene(vsebina)
+stran_v_posebnosti(vsebina)
+pridobi_jedi(mapa)
 
 
 
-posebnosti = list(posebnosti)
-posebnosti.insert(0,'id_lokala')
 
 
-#napisi_csv(['id', 'ime', 'naslov', 'doplacilo','mesto'], seznam_podatkov, 'csv_datoteke', 'lokali.csv')
-#napisi_csv(posebnosti, seznam_posebnosti, 'csv_datoteke', 'posebnosti.csv')
+
+
+
+
 #napisi_csv(['id_lokala', 'jed', 'vrsta'], seznam_strani, 'csv_datoteke', 'jedi.csv')
-napisi_csv(['id', 'ocena'], seznam_ocen, 'csv_datoteke', 'ocene.csv')
