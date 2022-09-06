@@ -49,6 +49,8 @@ def stran_v_lokale(stran):
     ]
     for slovar in seznam_podatkov_lokalov:
         slovar['ime'] = slovar['ime'].replace('&quot;','').replace('&amp;', '&')
+        slovar['doplacilo'] = float(slovar['doplacilo'].replace(',','.'))
+        
     napisi_csv(['id', 'ime', 'naslov', 'doplacilo', 'mesto'], seznam_podatkov_lokalov, 'csv_datoteke', 'lokali.csv')
 
 def stran_v_posebnosti(stran):
@@ -104,8 +106,8 @@ def pridobi_jedi(mapa):
     napisi_csv(['id_lokala', 'jed', 'vrsta'], seznam_jedi, 'csv_datoteke', 'jedi.csv')
 
 
-def pridobi_podatke_lokala(lokal):
-    najdeno = re.search(vzorec_podatki_lokalov, lokal)
+def pridobi_podatke_lokala(lokal, vzorec):
+    najdeno = re.search(vzorec, lokal)
     if najdeno:
         return najdeno.groupdict()
     return None
